@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model cells {
+  id             Int              @id @default(autoincrement())
+  cell_number    String?          @db.VarChar(20)
+  opened         Boolean?         @default(false)
+  prisoner_cells prisoner_cells[]
+}
+
+model messages {
+  messageId   Int       @id @default(autoincrement())
+  message     String?   @db.Text
+  sender_name String?   @db.VarChar(50)
+  subject     String?   @db.VarChar(50)
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model prisoner_cells {
+  prisoner_id Int
+  cell_id     Int
+  prisoners   prisoners @relation(fields: [prisoner_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "prisoner_cells_ibfk_1")
+  cells       cells     @relation(fields: [cell_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "prisoner_cells_ibfk_2")
+
+  @@id([prisoner_id, cell_id])
+  @@index([cell_id], map: "cell_id")
+}
+
+model prisoners {
+  id             Int              @id @default(autoincrement())
+  firstname      String?          @db.VarChar(50)
+  lastname       String?          @db.VarChar(50)
+  sentence_start DateTime?        @db.Date
+  sentence_end   DateTime?        @db.Date
+  crime          String?          @db.VarChar(100)
+  notes          String?          @db.Text
+  prisoner_cells prisoner_cells[]
+}
